@@ -1,0 +1,43 @@
+per userid -> session_id
+you get device_id, 
+
+
+created_at: time/ unique numbers...
+user_id: int
+session_id: int
+device_id: int
+ua: browsers
+l: language 
+name: action name ('page_viewed', 'custom', 'login_succeeded',
+       'passwordChange_succeeded', 'registration_succeeded',
+       'passwordReset_requested')
+custom_name: customer action details
+('First Timeline Access', 'First Card Access',
+       'Payment With Balance', 'Regular Cellphone Confirmation',
+       'Account Create Edc Deposit On Landing Page', 'Create Withdraw',
+       'Cellphone Confirmation')
+ip: ip address
+continent: continent
+country: country
+city: city
+lon: latitude
+lat: longitude
+accuracy: accuracy in terms of meter (some nulls)
+isp_name: isp name
+datacenter: binary, is this a data center
+proxy: binaryr, proxy or not
+mobile_device: binary mobile or not
+
+ideas:
+1. distance
+2. time difference
+3. speed (distance/time)
+4. datacetner/proxy/mobile
+5. time in day
+6. frequency
+7. ip address
+8. percentage of mobile/percentage of proxy/percentage of datacenter * binary
+9. isp
+10. accuracy
+11. country/continent
+12. 
