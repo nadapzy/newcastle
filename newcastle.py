@@ -41,27 +41,37 @@ def agent_name_from_api(ua_unique,file_name='agent_name.csv'):
         df_ua=pd.DataFrame.from_dict(user_agent,orient='index',)
 #        df_ua.column=['user_agent']
         df_ua.to_csv('agent_name.csv')
+    else: df_ua=pd.read_csv('agent_name.csv')
+    return df_ua
 
-agent_name_from_api(ua_unique,file_name='agent_name.csv')
-abc()
+df_ua=agent_name_from_api(ua_unique,file_name='agent_name.csv')
 df=df.merge(df_ua,how='left',left_on='ua',right_index=True)
-df_model=df.drop(['ua','created_at','user_id','session_id','device_id','ip','lon','lat','accuracy'],axis=1)
-df_model=df_model.drop(['l'],axis=1)
-from sklearn.ensemble import IsolationForest
-seed=25
-sf=IsolationForest(contamination=0.05,n_jobs=-1,random_state=seed)
-# apparently we need to do 1 hot coding for the model
 
-#from sklearn.preprocessing import OneHotEncoder
+#calculate risk score for each of the custom_name, define 1% event as risky event
+custom_name_pct=df.custom_name.value_counts()/df.custom_name.notnull().sum()
+custom_name_score=(custom_name_pct<0.01)*(1/custom_name_pct)
+custom_name_score=custom_name_score/max(custom_name_score)*30
+df=df.join(custom_name_score,on=['custom_name'],how='left',rsuffix='_score')
 
-#enc=OneHotEncoder(categorical_features=[0,1,2,3,4,5,6,10])
-df_trans=pd.get_dummies(df_model,dummy_na=True)
+#calculate risk score for each of the custom_name, define 1% event as risky event
+name_pct=df.name.value_counts()/df.name.notnull().sum()
+name_score=(name_pct<0.01)*(1/name_pct)
+name_score=name_score/max(name_score)*30
+df=df.join(name_score,on=['name'],how='left',rsuffix='_score')
 
-sf.fit(df_trans)
-df['score']=sf.predict(df_model)
-df[df.score==-1].device.value_counts()
+#calculate risk score for each of the browsing 
+df.sort_values(by=['device_id','created_at'],ascending=True,inplace=True)
+device_grouped=df.groupby(by='device_id')
+df['time_diff']=device_grouped.created_at.diff()
 
+df['time_diff_score']=(df.time_diff<df.time_diff.quantile(q=0.02))*(df.time_diff.quantile(q=0.02)-df.time_diff)
 
+df.time_diff_score=df.time_diff_score.fillna(value=0)
+df.custom_name_score=df.custom_name_score.fillna(value=0)
+df.name_score=df.name_score.fillna(value=0)
 
-
-
+df['score']=df.time_diff_score+df.name_score+df.custom_name_score
+device_gp=df.groupby(by='device_id')
+anomal_device=device_gp.score.sum().sort_values()
+print('Here is a list of anomalous device id:')
+print(anomal_device[-20:])
