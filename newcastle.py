@@ -46,7 +46,7 @@ def agent_name_from_api(ua_unique,file_name='agent_name.csv'):
 
 df_ua=agent_name_from_api(ua_unique,file_name='agent_name.csv')
 df=df.merge(df_ua,how='left',left_on='ua',right_index=True)
-
+abc()
 #calculate risk score for each of the custom_name, define 1% event as risky event
 custom_name_pct=df.custom_name.value_counts()/df.custom_name.notnull().sum()
 custom_name_score=(custom_name_pct<0.01)*(1/custom_name_pct)
